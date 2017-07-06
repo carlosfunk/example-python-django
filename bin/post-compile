@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+echo "-----> Running post-compile hook"
+
+BUILD_DIR=/tmp/build
+ENV_DIR=/tmp/environment
+
+BLACKLIST='^(GIT_DIR|STACK|PYTHONHOME|LD_LIBRARY_PATH|LIBRARY_PATH|PATH)$'
+
+# Python-specific variables.
+export PYTHONHOME=$BUILD_DIR/.heroku/python
+export PYTHONPATH=$BUILD_DIR/
+
+if [ -d "$ENV_DIR" ]; then
+  for e in $(ls $ENV_DIR); do
+    echo "$e" | grep -E "$WHITELIST" | grep -qvE "$BLACKLIST" &&
+    export "$e=$(cat $ENV_DIR/$e)"
+    :
+  done
+fi
+
+$PYTHONHOME/bin/python manage.py migrate --noinput
